@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import Link from 'next/link';
+import Image from 'next/image';
 import { signOut } from 'firebase/auth';
 import MedicationQuiz from '@/components/MedicationQuiz';
 
@@ -43,8 +44,15 @@ export default function DashboardLayout({ children }) {
       <nav className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <Link href="/dashboard" className="text-2xl font-bold text-blue-600">
+            <div className="flex items-center space-x-3">
+              <Image
+                src="/logo.png"
+                alt="MediMinder Logo"
+                width={40}
+                height={40}
+                className="rounded-lg"
+              />
+              <Link href="/dashboard" className="text-2xl font-bold text-blue-600 flex items-center">
                 MediMinder
               </Link>
             </div>
