@@ -669,7 +669,7 @@ export default function MedicationQuiz() {
               <button
                 key={index}
                 onClick={() => handleAnswerClick(index)}
-                className="w-full text-left p-4 rounded-lg border border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                className="w-full text-left p-4 rounded-lg border text-gray-900 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-colors"
               >
                 {option}
               </button>
@@ -744,7 +744,7 @@ export default function MedicationQuiz() {
               
               <div className="mb-4">
                 <h4 className="font-medium text-gray-900 mb-2">Areas for Education:</h4>
-                <ul className="space-y-2">
+                <ul className="space-y-2 text-gray-900 ">
                   {doctorReport.areasForEducation.map((area, index) => (
                     <li key={index} className="flex items-start">
                       <span className={`inline-block w-3 h-3 rounded-full mr-2 mt-1 ${
@@ -771,7 +771,7 @@ export default function MedicationQuiz() {
             </div>
           )}
           
-          <div className="space-y-6">
+          <div className="space-y-6 text-gray-900">
             {previousAttempts.map((attempt) => (
               <div 
                 key={attempt.id} 
