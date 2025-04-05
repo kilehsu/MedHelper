@@ -297,6 +297,63 @@ app.post('/speak-medication', async (req, res) => {
   }
 });
 
+// Add endpoint for text-based AI nurse responses
+app.post('/process-voice', express.json(), async (req, res) => {
+  try {
+    const { text, nurseName, personalized } = req.body;
+    
+    if (!text) {
+      return res.status(400).json({ error: 'No text provided' });
+    }
+
+    console.log('Received text for AI nurse:', { text, nurseName, personalized });
+
+    // Get ChatGPT to generate a personalized nurse response
+    const chatCompletion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: `You are ${nurseName || 'Sarah'}, a friendly and knowledgeable AI nurse assistant. 
+          Provide personalized medical advice based on the user's journal entry. 
+          Be empathetic, professional, and concise. 
+          If the user mentions specific symptoms, medications, or concerns, address them directly.
+          End your response with a follow-up question to encourage continued dialogue.`
+        },
+        {
+          role: "user",
+          content: text
+        }
+      ],
+    });
+
+    const responseText = chatCompletion.choices[0].message.content;
+
+    // Convert the response to speech
+    const speechResponse = await openai.audio.speech.create({
+      model: "tts-1",
+      voice: "alloy",
+      input: responseText,
+    });
+
+    // Save the audio file
+    const audioBuffer = Buffer.from(await speechResponse.arrayBuffer());
+    const audioFileName = `nurse-response-${Date.now()}.mp3`;
+    const audioPath = path.join('uploads', audioFileName);
+    fs.writeFileSync(audioPath, audioBuffer);
+
+    // Return the response
+    res.json({
+      response: responseText,
+      audioUrl: `/audio/${audioFileName}`
+    });
+
+  } catch (error) {
+    console.error('Error processing AI nurse response:', error);
+    res.status(500).json({ error: 'Error processing AI nurse response' });
+  }
+});
+
 // Serve audio files
 app.get('/audio/:filename', (req, res) => {
   const filePath = path.join(__dirname, 'uploads', req.params.filename);
