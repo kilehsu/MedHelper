@@ -7,6 +7,9 @@ const fetch = require('node-fetch');
 const path = require('path');
 const fs = require('fs');
 
+// Import routes
+const quizRoutes = require('./routes/quiz');
+
 const app = express();
 
 // Configure multer to append .webm extension
@@ -299,6 +302,9 @@ app.get('/audio/:filename', (req, res) => {
   const filePath = path.join(__dirname, 'uploads', req.params.filename);
   res.sendFile(filePath);
 });
+
+// Routes
+app.use('/api/quiz', quizRoutes);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {

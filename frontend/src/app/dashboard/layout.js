@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
 import Link from 'next/link';
 import { signOut } from 'firebase/auth';
+import MedicationQuiz from '@/components/MedicationQuiz';
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();
   const [user, setUser] = useState(null);
+  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' or 'quiz'
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -47,6 +49,26 @@ export default function DashboardLayout({ children }) {
               </Link>
             </div>
             <div className="flex items-center space-x-4">
+              <button 
+                onClick={() => setActiveTab('quiz')}
+                className={`px-3 py-2 rounded-md text-sm font-medium ${
+                  activeTab === 'quiz' 
+                    ? 'bg-blue-100 text-blue-700' 
+                    : 'text-gray-700 hover:text-blue-600'
+                }`}
+              >
+                Medication Quiz
+              </button>
+              <button 
+                onClick={() => setActiveTab('dashboard')}
+                className={`px-3 py-2 rounded-md text-sm font-medium ${
+                  activeTab === 'dashboard' 
+                    ? 'bg-blue-100 text-blue-700' 
+                    : 'text-gray-700 hover:text-blue-600'
+                }`}
+              >
+                Dashboard
+              </button>
               <span className="text-gray-700">{user.email}</span>
               <button
                 onClick={handleSignOut}
@@ -61,7 +83,7 @@ export default function DashboardLayout({ children }) {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {children}
+        {activeTab === 'dashboard' ? children : <MedicationQuiz />}
       </main>
     </div>
   );

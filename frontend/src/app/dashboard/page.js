@@ -11,7 +11,7 @@ export default function Dashboard() {
   const [showScanner, setShowScanner] = useState(false);
   const [editingMedication, setEditingMedication] = useState(null);
   const [error, setError] = useState(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [playingMedicationId, setPlayingMedicationId] = useState(null);
   const [newMedication, setNewMedication] = useState({
     name: '',
     dosage: '',
@@ -184,10 +184,28 @@ export default function Dashboard() {
 
   // Add function to speak medication details
   const speakMedication = async (medication) => {
-    if (isPlaying) return; // Prevent multiple simultaneous playbacks
+    if (playingMedicationId === medication.id) {
+      // If this medication is already playing, stop it
+      const audioElements = document.querySelectorAll('audio');
+      audioElements.forEach(audio => {
+        audio.pause();
+        audio.currentTime = 0;
+      });
+      setPlayingMedicationId(null);
+      return;
+    }
+    
+    // If another medication is playing, stop it first
+    if (playingMedicationId) {
+      const audioElements = document.querySelectorAll('audio');
+      audioElements.forEach(audio => {
+        audio.pause();
+        audio.currentTime = 0;
+      });
+    }
     
     try {
-      setIsPlaying(true);
+      setPlayingMedicationId(medication.id);
       const text = `Here are the details for ${medication.name}: 
         The dosage is ${medication.dosage}. 
         Take it ${medication.frequency}. 
@@ -206,16 +224,33 @@ export default function Dashboard() {
       }
 
       const data = await response.json();
+      
+      // Create a unique ID for this audio element
+      const audioId = `audio-${medication.id}`;
+      
+      // Remove any existing audio elements
+      const existingAudio = document.getElementById(audioId);
+      if (existingAudio) {
+        existingAudio.remove();
+      }
+      
+      // Create a new audio element with a unique ID
       const audio = new Audio(`http://localhost:3001${data.audioUrl}`);
+      audio.id = audioId;
       
       audio.onended = () => {
-        setIsPlaying(false);
+        setPlayingMedicationId(null);
+      };
+      
+      audio.onerror = () => {
+        console.error('Error playing audio');
+        setPlayingMedicationId(null);
       };
 
       await audio.play();
     } catch (error) {
       console.error('Error playing voice:', error);
-      setIsPlaying(false);
+      setPlayingMedicationId(null);
       setError('Failed to play voice feedback. Please try again.');
     }
   };
@@ -348,13 +383,13 @@ export default function Dashboard() {
                     </span>
                     <button
                       onClick={() => speakMedication(medication)}
-                      disabled={isPlaying}
-                      className={`text-blue-600 hover:text-blue-800 font-medium flex items-center ${isPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      disabled={playingMedicationId !== null && playingMedicationId !== medication.id}
+                      className={`text-blue-600 hover:text-blue-800 font-medium flex items-center ${playingMedicationId !== null && playingMedicationId !== medication.id ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <svg className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15.414a5 5 0 001.414 1.414m2.828-9.9a9 9 0 012.728-2.728" />
                       </svg>
-                      {isPlaying ? 'Speaking...' : 'Speak'}
+                      {playingMedicationId === medication.id ? 'Speaking...' : 'Speak'}
                     </button>
                     <button 
                       onClick={() => handleEditClick(medication)}
