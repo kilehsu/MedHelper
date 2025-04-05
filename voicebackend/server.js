@@ -148,14 +148,14 @@ app.post('/recognize-medicine', imageUpload.single('image'), async (req, res) =>
       messages: [
         {
           role: "system",
-          content: "You are a medical assistant specialized in identifying medicines. Analyze the image and provide information about the medicine, including its name, purpose, and any warnings. Be concise and accurate."
+          content: "You are a medical assistant specialized in identifying medicines. Analyze the image and provide information about the medicine in the following EXACT format:\n\nMedication Name: [name]\nDosage: [dosage]\nFrequency: [frequency]\nNotes: [Additional important information, warnings, or special instructions]\n\nBe concise and accurate. If you cannot identify the medicine or any field with high confidence, respond with 'Error: [specific reason why identification failed]'"
         },
         {
           role: "user",
           content: [
             { 
               type: "text", 
-              text: "What medicine is this? Please identify it and provide key information." 
+              text: "Please identify this medicine and provide the information in the specified format." 
             },
             {
               type: "image_url",
@@ -171,6 +171,13 @@ app.post('/recognize-medicine', imageUpload.single('image'), async (req, res) =>
 
     const medicineInfo = response.choices[0].message.content;
 
+    // Check if the response indicates an error
+    if (medicineInfo.startsWith('Error:')) {
+      return res.status(400).json({ 
+        error: medicineInfo.substring(7).trim() 
+      });
+    }
+
     // Clean up the uploaded image file
     fs.unlinkSync(req.file.path);
 
@@ -182,6 +189,108 @@ app.post('/recognize-medicine', imageUpload.single('image'), async (req, res) =>
   } catch (error) {
     console.error('Error processing image:', error);
     res.status(500).json({ error: 'Error processing image request' });
+  }
+});
+
+// Add endpoint for text-to-speech processing
+app.post('/process-medication', async (req, res) => {
+  try {
+    const { text } = req.body;
+    
+    if (!text) {
+      return res.status(400).json({ error: 'No text provided' });
+    }
+
+    // Get ChatGPT to enhance the message
+    const chatCompletion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: "You are a helpful medical assistant. Keep your responses concise, clear, and focused on medication information. Make sure to maintain a friendly and professional tone."
+        },
+        {
+          role: "user",
+          content: text
+        }
+      ],
+    });
+
+    const enhancedText = chatCompletion.choices[0].message.content;
+
+    // Convert the enhanced text to speech
+    const speechResponse = await openai.audio.speech.create({
+      model: "tts-1",
+      voice: "alloy",
+      input: enhancedText,
+    });
+
+    // Save the audio file
+    const audioBuffer = Buffer.from(await speechResponse.arrayBuffer());
+    const audioFileName = `response-${Date.now()}.mp3`;
+    const audioPath = path.join('uploads', audioFileName);
+    fs.writeFileSync(audioPath, audioBuffer);
+
+    // Return the response
+    res.json({
+      text: enhancedText,
+      audioUrl: `/audio/${audioFileName}`
+    });
+
+  } catch (error) {
+    console.error('Error processing text-to-speech:', error);
+    res.status(500).json({ error: 'Error processing text-to-speech request' });
+  }
+});
+
+// Add endpoint for medication text-to-speech
+app.post('/speak-medication', async (req, res) => {
+  try {
+    const { text } = req.body;
+    
+    if (!text) {
+      return res.status(400).json({ error: 'No text provided' });
+    }
+
+    // Get ChatGPT to enhance the message
+    const chatCompletion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: "You are a helpful medical assistant. Keep your responses concise, clear, and focused on medication information. Make sure to maintain a friendly and professional tone."
+        },
+        {
+          role: "user",
+          content: text
+        }
+      ],
+    });
+
+    const enhancedText = chatCompletion.choices[0].message.content;
+
+    // Convert the enhanced text to speech
+    const speechResponse = await openai.audio.speech.create({
+      model: "tts-1",
+      voice: "alloy",
+      input: enhancedText,
+    });
+
+    // Save the audio file
+    const audioBuffer = Buffer.from(await speechResponse.arrayBuffer());
+    const audioFileName = `medication-${Date.now()}.mp3`;
+    const audioPath = path.join('uploads', audioFileName);
+    fs.writeFileSync(audioPath, audioBuffer);
+
+    // Return the response
+    res.json({
+      text: enhancedText,
+      audioUrl: `/audio/${audioFileName}`
+    });
+
+  } catch (error) {
+    console.error('Error processing text-to-speech:', error);
+    res.status(500).json({ error: 'Error processing text-to-speech request' });
   }
 });
 

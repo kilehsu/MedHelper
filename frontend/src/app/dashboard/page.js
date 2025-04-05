@@ -10,6 +10,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showScanner, setShowScanner] = useState(false);
   const [editingMedication, setEditingMedication] = useState(null);
+  const [error, setError] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [newMedication, setNewMedication] = useState({
     name: '',
     dosage: '',
@@ -43,11 +45,70 @@ export default function Dashboard() {
     }
   };
 
-  const handleScan = async (imageData) => {
-    // Here you would typically send the image to a backend service
-    // for medication recognition. For now, we'll just show the form
-    setShowScanner(false);
-    // You could add the image data to the newMedication state if needed
+  const ErrorPopup = ({ message, onClose }) => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+        <div className="flex items-center mb-4">
+          <div className="bg-red-100 p-2 rounded-full">
+            <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 ml-3">Error</h3>
+        </div>
+        <p className="text-gray-600 mb-4">{message}</p>
+        <button
+          onClick={onClose}
+          className="w-full bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+
+  const handleScan = async (scanResult) => {
+    if (!scanResult.success) {
+      setError(scanResult.error);
+      return;
+    }
+
+    try {
+      // Parse the medicine information from the AI
+      const medicineInfo = scanResult.medicineInfo;
+      
+      // Initialize parsed info
+      let parsedInfo = {
+        name: '',
+        dosage: '',
+        frequency: '',
+        notes: ''
+      };
+
+      // Check if the response is in the expected format
+      const nameMatch = medicineInfo.match(/Medication Name:\s*(.+?)(?=\n|$)/);
+      const dosageMatch = medicineInfo.match(/Dosage:\s*(.+?)(?=\n|$)/);
+      const frequencyMatch = medicineInfo.match(/Frequency:\s*(.+?)(?=\n|$)/);
+      const notesMatch = medicineInfo.match(/Notes:\s*(.+?)(?=\n|$)/);
+
+      if (nameMatch) parsedInfo.name = nameMatch[1].trim();
+      if (dosageMatch) parsedInfo.dosage = dosageMatch[1].trim();
+      if (frequencyMatch) parsedInfo.frequency = frequencyMatch[1].trim();
+      if (notesMatch) parsedInfo.notes = notesMatch[1].trim();
+
+      // Validate that we have the required fields
+      if (!parsedInfo.name || !parsedInfo.dosage || !parsedInfo.frequency) {
+        throw new Error('Could not extract all required medication information. Please try scanning again.');
+      }
+
+      // Update the form with the parsed information
+      setNewMedication(parsedInfo);
+      setShowScanner(false);
+
+    } catch (error) {
+      console.error('Error processing scan result:', error);
+      setError(error.message || 'Failed to process the scanned medication. Please try again.');
+    }
   };
 
   const handleAddMedication = async (e) => {
@@ -121,8 +182,47 @@ export default function Dashboard() {
     }
   };
 
+  // Add function to speak medication details
+  const speakMedication = async (medication) => {
+    if (isPlaying) return; // Prevent multiple simultaneous playbacks
+    
+    try {
+      setIsPlaying(true);
+      const text = `Here are the details for ${medication.name}: 
+        The dosage is ${medication.dosage}. 
+        Take it ${medication.frequency}. 
+        ${medication.notes ? 'Additional notes: ' + medication.notes : ''}`;
+
+      const response = await fetch('http://localhost:3001/speak-medication', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get voice response');
+      }
+
+      const data = await response.json();
+      const audio = new Audio(`http://localhost:3001${data.audioUrl}`);
+      
+      audio.onended = () => {
+        setIsPlaying(false);
+      };
+
+      await audio.play();
+    } catch (error) {
+      console.error('Error playing voice:', error);
+      setIsPlaying(false);
+      setError('Failed to play voice feedback. Please try again.');
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {error && <ErrorPopup message={error} onClose={() => setError(null)} />}
       {/* Header */}
       <div className="bg-white shadow rounded-lg p-6">
         <h1 className="text-2xl font-bold text-gray-900">Your Medications</h1>
@@ -246,6 +346,16 @@ export default function Dashboard() {
                     <span className="text-sm text-gray-500">
                       Next dose: {new Date(medication.nextDose).toLocaleString()}
                     </span>
+                    <button
+                      onClick={() => speakMedication(medication)}
+                      disabled={isPlaying}
+                      className={`text-blue-600 hover:text-blue-800 font-medium flex items-center ${isPlaying ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <svg className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15.414a5 5 0 001.414 1.414m2.828-9.9a9 9 0 012.728-2.728" />
+                      </svg>
+                      {isPlaying ? 'Speaking...' : 'Speak'}
+                    </button>
                     <button 
                       onClick={() => handleEditClick(medication)}
                       className="text-blue-600 hover:text-blue-800 font-medium"
