@@ -1,26 +1,24 @@
-# MedHelper
+# MediMinder
 
 A consumer-driven medication tracking and safety application designed to reduce medication errors and improve patient outcomes.
 
 ### Inspiration
 
-The inspiration for MedHelper came from a personal experience with medication management. After witnessing a family member struggle with tracking multiple medications, remembering dosages, and documenting side effects, I realized there was a significant gap in consumer-focused medication safety tools. This experience aligned perfectly with the Pittsburgh Regional Health Initiative's Patient Safety Technology Challenge, which aims to address preventable deaths and disabilities from medical errors.
+Medical errors harm millions of U.S. patients annually, with medication errors being one of the leading causes. We wanted to create a solution that would empower patients to take control of their medication safety while providing valuable data to healthcare providers.
 
-Medical errors harm millions of U.S. patients annually, with medication errors being one of the leading causes. I wanted to create a solution that would empower patients to take control of their medication safety while providing valuable data to healthcare providers.
+### What We Learned
 
-### What I Learned
+Throughout the development of MedHelper, we gained valuable insights into several areas:
 
-Throughout the development of MedHelper, I gained valuable insights into several areas:
-
-- **Healthcare Technology**: I learned about the unique challenges in developing healthcare applications, including privacy considerations, data security, and the importance of user-friendly interfaces for diverse user groups.
+- **Healthcare Technology**: We learned about the unique challenges in developing healthcare applications, including privacy considerations, data security, and the importance of user-friendly interfaces for diverse user groups.
 
 - **Voice Recognition Technology**: Implementing the AI nurse feature required deep understanding of speech recognition, natural language processing, and audio processing techniques.
 
-- **Full-Stack Development**: The project allowed me to practice full-stack development, from frontend React components to backend API development with Node.js and Firebase integration.
+- **Full-Stack Development**: The project allowed us to practice full-stack development, from frontend React components to backend API development with Node.js and Firebase integration.
 
-- **User Experience Design**: I learned how to design interfaces that are accessible to users of all ages and technical abilities, with a focus on those who might be managing complex medication regimens.
+- **User Experience Design**: We learned how to design interfaces that are accessible to users of all ages and technical abilities, with a focus on those who might be managing complex medication regimens.
 
-- **Firebase Integration**: I gained experience with Firebase Authentication, Firestore database, and storage solutions for managing user data securely.
+- **Firebase Integration**: We gained experience with Firebase Authentication, Firestore database, and storage solutions for managing user data securely.
 
 ### How We Built It
 
@@ -52,8 +50,6 @@ The application features several key components:
 
 Developing MedHelper presented several significant challenges:
 
-- **Voice Recognition Accuracy**: Implementing reliable voice recognition for diverse accents and speech patterns was challenging. I had to experiment with different approaches and eventually settled on a combination of browser APIs and custom processing.
-
 - **Backend Integration**: Connecting the frontend with the backend services required careful API design and error handling, especially for the voice processing features.
 
 - **Data Security**: Ensuring that sensitive health information was properly secured and that the application complied with privacy considerations was a priority.
@@ -62,6 +58,6 @@ Developing MedHelper presented several significant challenges:
 
 - **Real-time Processing**: Implementing features that required real-time processing, such as the AI nurse's voice responses, presented technical challenges in terms of performance and reliability.
 
-- **Cross-Platform Compatibility**: Ensuring the application works consistently across different devices and browsers required extensive testing and adjustments.
+- **Optical Character Recognition**: While implementing OCR/computer vision into our project, we ran into some challenges during initial testing of scanning different medications.
 
-Despite these challenges, each obstacle provided valuable learning opportunities and helped shape MedHelper into a more robust and user-friendly application. The project has been an incredible journey of learning and growth, and I'm excited to continue improving it to better serve patients and reduce medication errors. 
+Despite these challenges, each obstacle provided valuable learning opportunities and helped shape MedHelper into a more robust and user-friendly application. The project has been an incredible journey of learning and growth, and we’re excited to continue improving it to better serve patients and reduce medication errors.
