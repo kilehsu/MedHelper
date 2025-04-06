@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { db, auth } from '@/lib/firebase';
-import { collection, query, where, getDocs, addDoc, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, orderBy, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 
 export default function Journal() {
@@ -21,6 +21,14 @@ export default function Journal() {
   const [symptoms, setSymptoms] = useState('');
   const [severity, setSeverity] = useState('moderate');
   const [timeAfterDose, setTimeAfterDose] = useState('');
+  
+  // Edit states
+  const [editingEntry, setEditingEntry] = useState(null);
+  const [editText, setEditText] = useState('');
+  const [editMedication, setEditMedication] = useState('');
+  const [editSymptoms, setEditSymptoms] = useState('');
+  const [editSeverity, setEditSeverity] = useState('moderate');
+  const [editTimeAfterDose, setEditTimeAfterDose] = useState('');
   
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -81,6 +89,54 @@ export default function Journal() {
       setError('Failed to load journal entries. Please try again.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const deleteEntry = async (entryId) => {
+    try {
+      setError(null);
+      await deleteDoc(doc(db, 'journal', entryId));
+      // Refresh entries after deletion
+      fetchEntries(auth.currentUser.uid);
+    } catch (error) {
+      console.error('Error deleting journal entry:', error);
+      setError('Failed to delete journal entry. Please try again.');
+    }
+  };
+
+  const startEditing = (entry) => {
+    setEditingEntry(entry.id);
+    setEditText(entry.text || '');
+    setEditMedication(entry.medication || '');
+    setEditSymptoms(entry.symptoms ? entry.symptoms.join(', ') : '');
+    setEditSeverity(entry.severity || 'moderate');
+    setEditTimeAfterDose(entry.timeAfterDose || '');
+  };
+
+  const cancelEditing = () => {
+    setEditingEntry(null);
+  };
+
+  const saveEdit = async () => {
+    try {
+      setError(null);
+      
+      const entryRef = doc(db, 'journal', editingEntry);
+      await updateDoc(entryRef, {
+        text: editText,
+        medication: editMedication,
+        symptoms: editSymptoms.split(',').map(s => s.trim()).filter(s => s),
+        severity: editSeverity,
+        timeAfterDose: parseInt(editTimeAfterDose) || null,
+        updatedAt: new Date().toISOString()
+      });
+      
+      // Refresh entries after update
+      fetchEntries(auth.currentUser.uid);
+      setEditingEntry(null);
+    } catch (error) {
+      console.error('Error updating journal entry:', error);
+      setError('Failed to update journal entry. Please try again.');
     }
   };
 
@@ -382,53 +438,165 @@ export default function Journal() {
         <div className="space-y-6">
           {entries.map((entry) => (
             <div key={entry.id} className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <p className="text-gray-900 whitespace-pre-wrap">{entry.text}</p>
-                  
-                  {entry.medication && (
-                    <div className="mt-2">
-                      <span className="text-sm font-medium text-gray-500">Medication: </span>
-                      <span className="text-sm text-gray-900">{entry.medication}</span>
-                      {entry.timeAfterDose && (
-                        <span className="text-sm text-gray-500"> ({entry.timeAfterDose} minutes after dose)</span>
-                      )}
-                    </div>
-                  )}
-                  
-                  {entry.symptoms && entry.symptoms.length > 0 && (
-                    <div className="mt-2 flex flex-wrap gap-2 ">
-                      {entry.symptoms.map((symptom, index) => (
-                        <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {symptom}
-                        </span>
+              {editingEntry === entry.id ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Journal Entry
+                    </label>
+                    <textarea
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      rows={4}
+                      className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Medication
+                    </label>
+                    <select
+                      value={editMedication}
+                      onChange={(e) => setEditMedication(e.target.value)}
+                      className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="">Select a medication</option>
+                      {medications.map(med => (
+                        <option key={med.id} value={med.name}>{med.name}</option>
                       ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Symptoms (comma-separated)
+                    </label>
+                    <input
+                      type="text"
+                      value={editSymptoms}
+                      onChange={(e) => setEditSymptoms(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 text-gray-700 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="headache, nausea, dizziness"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Severity
+                      </label>
+                      <select
+                        value={editSeverity}
+                        onChange={(e) => setEditSeverity(e.target.value)}
+                        className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="mild">Mild</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="severe">Severe</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Minutes After Dose
+                      </label>
+                      <input
+                        type="number"
+                        value={editTimeAfterDose}
+                        onChange={(e) => setEditTimeAfterDose(e.target.value)}
+                        className="w-full px-3 py-2 border text-gray-700 border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="30"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end space-x-3">
+                    <button
+                      onClick={cancelEditing}
+                      className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={saveEdit}
+                      className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    >
+                      Save Changes
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <p className="text-gray-900 whitespace-pre-wrap">{entry.text}</p>
+                      
+                      {entry.medication && (
+                        <div className="mt-2">
+                          <span className="text-sm font-medium text-gray-500">Medication: </span>
+                          <span className="text-sm text-gray-900">{entry.medication}</span>
+                          {entry.timeAfterDose && (
+                            <span className="text-sm text-gray-500"> ({entry.timeAfterDose} minutes after dose)</span>
+                          )}
+                        </div>
+                      )}
+                      
+                      {entry.symptoms && entry.symptoms.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-2 ">
+                          {entry.symptoms.map((symptom, index) => (
+                            <span key={index} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {symptom}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {entry.severity && (
+                        <div className="mt-2">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            entry.severity === 'mild' ? 'bg-green-100 text-green-800' :
+                            entry.severity === 'moderate' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {entry.severity}
+                          </span>
+                        </div>
+                      )}
+                      
+                      <p className="text-sm text-gray-500 mt-2">{formatDate(entry.timestamp)}</p>
+                    </div>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => startEditing(entry)}
+                        className="text-blue-500 hover:text-blue-700 focus:outline-none"
+                        aria-label="Edit entry"
+                      >
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => deleteEntry(entry.id)}
+                        className="text-red-500 hover:text-red-700 focus:outline-none"
+                        aria-label="Delete entry"
+                      >
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {entry.audioUrl && (
+                    <div className="mt-4">
+                      <audio 
+                        src={`http://localhost:3001${entry.audioUrl}`}
+                        className="w-full"
+                      />
                     </div>
                   )}
-                  
-                  {entry.severity && (
-                    <div className="mt-2">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        entry.severity === 'mild' ? 'bg-green-100 text-green-800' :
-                        entry.severity === 'moderate' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {entry.severity}
-                      </span>
-                    </div>
-                  )}
-                  
-                  <p className="text-sm text-gray-500 mt-2">{formatDate(entry.timestamp)}</p>
-                </div>
-              </div>
-              
-              {entry.audioUrl && (
-                <div className="mt-4">
-                  <audio 
-                    src={`http://localhost:3001${entry.audioUrl}`}
-                    className="w-full"
-                  />
-                </div>
+                </>
               )}
             </div>
           ))}
