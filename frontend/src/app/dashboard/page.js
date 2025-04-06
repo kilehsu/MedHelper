@@ -187,7 +187,7 @@ export default function Dashboard() {
         Take it ${medication.frequency}. 
         ${medication.notes ? 'Additional notes: ' + medication.notes : ''}`;
 
-      const response = await fetch('http://localhost:3001/speak-medication', {
+      const response = await fetch('https://medi-minder-d66fcfda1bec.herokuapp.com/speak-medication', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -211,7 +211,7 @@ export default function Dashboard() {
       }
       
       // Create a new audio element with a unique ID
-      const audio = new Audio(`http://localhost:3001${data.audioUrl}`);
+      const audio = new Audio(`https://medi-minder-d66fcfda1bec.herokuapp.com${data.audioUrl}`);
       audio.id = audioId;
       
       audio.onended = () => {

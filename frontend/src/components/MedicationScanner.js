@@ -123,7 +123,7 @@ export default function MedicationScanner({ onScan }) {
           const formData = new FormData();
           formData.append('image', blob, 'medicine.jpg');
 
-          const response = await fetch('http://localhost:3001/recognize-medicine', {
+          const response = await fetch('https://medi-minder-d66fcfda1bec.herokuapp.com/recognize-medicine', {
             method: 'POST',
             body: formData,
           });
@@ -139,7 +139,7 @@ export default function MedicationScanner({ onScan }) {
             throw new Error(errorMessage);
           }
 
-          const voiceResponse = await fetch('http://localhost:3001/speak-medication', {
+          const voiceResponse = await fetch('https://medi-minder-d66fcfda1bec.herokuapp.com/speak-medication', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -153,7 +153,7 @@ export default function MedicationScanner({ onScan }) {
             console.error('Voice feedback failed:', await voiceResponse.text());
           } else {
             const voiceData = await voiceResponse.json();
-            const audio = new Audio(`http://localhost:3001${voiceData.audioUrl}`);
+            const audio = new Audio(`https://medi-minder-d66fcfda1bec.herokuapp.com${voiceData.audioUrl}`);
             await audio.play();
           }
           

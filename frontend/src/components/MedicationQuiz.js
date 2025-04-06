@@ -86,7 +86,7 @@ export default function MedicationQuiz() {
       setError(null);
       
       // Call our backend API to generate AI questions
-      const response = await fetch('http://localhost:3001/api/quiz/generate', {
+      const response = await fetch('https://medi-minder-d66fcfda1bec.herokuapp.com/api/quiz/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

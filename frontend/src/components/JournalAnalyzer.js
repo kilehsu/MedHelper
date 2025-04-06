@@ -68,7 +68,7 @@ export default function VoiceTest() {
       const formData = new FormData();
       formData.append('audio', audioBlob, 'recording.webm');
 
-      const response = await fetch('http://localhost:3001/process-voice', {
+      const response = await fetch('https://medi-minder-d66fcfda1bec.herokuapp.com/process-voice', {
         method: 'POST',
         body: formData,
       });
@@ -79,7 +79,7 @@ export default function VoiceTest() {
 
       const data = await response.json();
       setResponseText(data.text);
-      setAudioUrl(`http://localhost:3001${data.audioUrl}`);
+      setAudioUrl(`https://medi-minder-d66fcfda1bec.herokuapp.com${data.audioUrl}`);
       
       // Auto-play the response
       if (audioPlayerRef.current) {

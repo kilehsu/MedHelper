@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 async function processVoice(text, nurseName = 'Sarah', personalized = true) {
   try {
     // Call the voice backend service
-    const response = await fetch('http://localhost:3001/process-voice', {
+    const response = await fetch('https://medi-minder-d66fcfda1bec.herokuapp.com/process-voice', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

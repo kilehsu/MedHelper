@@ -185,7 +185,7 @@ export default function Journal() {
       formData.append('timeAfterDose', timeAfterDose);
       formData.append('symptoms', symptoms);
 
-      const response = await fetch('http://localhost:3001/process-voice', {
+      const response = await fetch('https://medi-minder-d66fcfda1bec.herokuapp.com/process-voice', {
         method: 'POST',
         body: formData,
       });
@@ -199,10 +199,10 @@ export default function Journal() {
       
       if (data.text) {
         setJournalText(data.extractedInfo);
-        setAudioUrl(`http://localhost:3001${data.audioUrl}`);
+        setAudioUrl(`https://medi-minder-d66fcfda1bec.herokuapp.com${data.audioUrl}`);
         
         // Create a new audio element for the AI response
-        const aiAudio = new Audio(`http://localhost:3001${data.audioUrl}`);
+        const aiAudio = new Audio(`https://medi-minder-d66fcfda1bec.herokuapp.com${data.audioUrl}`);
         aiAudio.oncanplaythrough = () => {
           aiAudio.play().catch(err => {
             console.error('Error playing AI response:', err);
@@ -591,7 +591,7 @@ export default function Journal() {
                   {entry.audioUrl && (
                     <div className="mt-4">
                       <audio 
-                        src={`http://localhost:3001${entry.audioUrl}`}
+                        src={`https://medi-minder-d66fcfda1bec.herokuapp.com${entry.audioUrl}`}
                         className="w-full"
                       />
                     </div>
