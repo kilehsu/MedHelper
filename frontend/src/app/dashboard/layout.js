@@ -7,11 +7,18 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { signOut } from 'firebase/auth';
 import MedicationQuiz from '@/components/MedicationQuiz';
+import { JournalComponent } from '../journal/page';
 
 export default function DashboardLayout({ children }) {
   const router = useRouter();
   const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard' or 'quiz'
+  const [showQuiz, setShowQuiz] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('showMedicationQuiz') === 'true';
+    }
+    return false;
+  });
+  const [currentView, setCurrentView] = useState('dashboard');
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -25,6 +32,21 @@ export default function DashboardLayout({ children }) {
     return () => unsubscribe();
   }, [router]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('showMedicationQuiz', showQuiz);
+    }
+  }, [showQuiz]);
+
+  const handleNavigation = (view) => {
+    setCurrentView(view);
+    if (view === 'quiz') {
+      setShowQuiz(true);
+    } else {
+      setShowQuiz(false);
+    }
+  };
+
   const handleSignOut = async () => {
     try {
       await signOut(auth);
@@ -35,7 +57,7 @@ export default function DashboardLayout({ children }) {
   };
 
   if (!user) {
-    return null; // or a loading spinner
+    return null;
   }
 
   return (
@@ -52,21 +74,28 @@ export default function DashboardLayout({ children }) {
                 height={40}
                 className="rounded-lg"
               />
-              <Link href="/dashboard" className="text-2xl font-bold text-blue-600 flex items-center">
+              <button 
+                onClick={() => handleNavigation('dashboard')}
+                className="text-2xl font-bold text-blue-600 flex items-center"
+              >
                 MediMinder
-              </Link>
+              </button>
             </div>
             <div className="flex items-center space-x-4">
-              <Link 
-                href="/journal"
-                className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600"
-              >
-                Symptom Journal
-              </Link>
               <button 
-                onClick={() => setActiveTab('quiz')}
+                onClick={() => handleNavigation('dashboard')}
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
-                  activeTab === 'quiz' 
+                  currentView === 'dashboard' && !showQuiz
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'text-gray-700 hover:text-blue-600'
+                }`}
+              >
+                Dashboard
+              </button>
+              <button 
+                onClick={() => handleNavigation('quiz')}
+                className={`px-3 py-2 rounded-md text-sm font-medium ${
+                  showQuiz
                     ? 'bg-blue-100 text-blue-700' 
                     : 'text-gray-700 hover:text-blue-600'
                 }`}
@@ -74,14 +103,14 @@ export default function DashboardLayout({ children }) {
                 Medication Quiz
               </button>
               <button 
-                onClick={() => setActiveTab('dashboard')}
+                onClick={() => handleNavigation('journal')}
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
-                  activeTab === 'dashboard' 
-                    ? 'bg-blue-100 text-blue-700' 
+                  currentView === 'journal'
+                    ? 'bg-blue-100 text-blue-700'
                     : 'text-gray-700 hover:text-blue-600'
                 }`}
               >
-                Dashboard
+                Symptom Journal
               </button>
               <span className="text-gray-700">{user.email}</span>
               <button
@@ -97,7 +126,9 @@ export default function DashboardLayout({ children }) {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {activeTab === 'dashboard' ? children : <MedicationQuiz />}
+        {currentView === 'dashboard' && !showQuiz && children}
+        {showQuiz && <MedicationQuiz />}
+        {currentView === 'journal' && <JournalComponent />}
       </main>
     </div>
   );

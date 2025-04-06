@@ -56,21 +56,29 @@ export default function Journal() {
   const fetchEntries = async (userId) => {
     try {
       setLoading(true);
-      const q = query(
-        collection(db, 'journal'),
-        where('userId', '==', userId),
-        orderBy('timestamp', 'desc')
-      );
+      setError(null);
+
+      // Simple query to get journal entries for the user
+      const journalRef = collection(db, 'journal');
+      const q = query(journalRef, where('userId', '==', userId));
+      
       const querySnapshot = await getDocs(q);
       const journalEntries = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       }));
+
+      // Sort entries by timestamp on the client side
+      journalEntries.sort((a, b) => {
+        const dateA = new Date(a.timestamp);
+        const dateB = new Date(b.timestamp);
+        return dateB - dateA;
+      });
+
       setEntries(journalEntries);
-      setError(null);
     } catch (error) {
       console.error('Error fetching journal entries:', error);
-      setError('Failed to load your journal entries. Please try again.');
+      setError('Failed to load journal entries. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -440,4 +448,6 @@ export default function Journal() {
       </div>
     </div>
   );
-} 
+}
+
+export { Journal as JournalComponent }; 
