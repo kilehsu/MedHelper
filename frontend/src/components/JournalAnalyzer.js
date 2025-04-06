@@ -145,7 +145,6 @@ export default function VoiceTest() {
             <h2 className="text-lg font-semibold mb-2">Audio Response:</h2>
             <audio 
               ref={audioPlayerRef}
-              controls 
               src={audioUrl} 
               className="w-full"
             />

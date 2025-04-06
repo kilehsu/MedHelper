@@ -290,7 +290,6 @@ export default function Journal() {
               <div className="mt-4">
                 <audio 
                   ref={audioPlayerRef}
-                  controls 
                   src={audioUrl} 
                   className="w-full"
                 />
@@ -426,7 +425,6 @@ export default function Journal() {
               {entry.audioUrl && (
                 <div className="mt-4">
                   <audio 
-                    controls 
                     src={`http://localhost:3001${entry.audioUrl}`}
                     className="w-full"
                   />
