@@ -442,16 +442,20 @@ export default function MedicationQuiz() {
       doc.text('Overall Medication Knowledge', 20, 50);
       
       // Draw score bar
+      // Draw background (gray) bar first
       doc.setDrawColor(200, 200, 200);
-      doc.setFillColor(41, 128, 185);
+      doc.setFillColor(240, 240, 240);
       doc.rect(20, 55, 170, 10, 'F');
-      doc.setDrawColor(41, 128, 185);
+      
+      // Draw the filled (blue) portion based on score
+      doc.setFillColor(41, 128, 185);
+      const scoreWidth = (doctorReport.overallScore / 100) * 170;
+      doc.rect(20, 55, scoreWidth, 10, 'F');
+      
+      // Draw border
+      doc.setDrawColor(200, 200, 200);
       doc.rect(20, 55, 170, 10);
       
-      // Add score percentage
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(41, 128, 185);
-      doc.text(`${doctorReport.overallScore}%`, 195, 62, { align: 'right' });
       
       // Add areas for education
       doc.setFont('helvetica', 'bold');

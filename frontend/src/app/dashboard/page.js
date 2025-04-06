@@ -377,17 +377,14 @@ export default function Dashboard() {
                       <p className="text-sm text-gray-500 mt-1">Notes: {medication.notes}</p>
                     )}
                   </div>
-                  <div className="flex items-center space-x-4">
-                    <span className="text-sm text-gray-500">
-                      Next dose: {new Date(medication.nextDose).toLocaleString()}
-                    </span>
+                  <div className="flex items-center space-x-4">å
                     <button
                       onClick={() => speakMedication(medication)}
                       disabled={playingMedicationId !== null && playingMedicationId !== medication.id}
                       className={`text-blue-600 hover:text-blue-800 font-medium flex items-center ${playingMedicationId !== null && playingMedicationId !== medication.id ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       <svg className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15.414a5 5 0 001.414 1.414m2.828-9.9a9 9 0 012.728-2.728" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z" />
                       </svg>
                       {playingMedicationId === medication.id ? 'Speaking...' : 'Speak'}
                     </button>

@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
+import Image from 'next/image';
 import Link from 'next/link';
 
 export default function Home() {
@@ -26,7 +27,21 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <span className="text-2xl font-bold text-blue-600">MediMinder</span>
+              <div className="flex items-center space-x-3">
+                <Image
+                  src="/logo.png"
+                  alt="MediMinder Logo"
+                  width={40}
+                  height={40}
+                  className="rounded-lg"
+                />
+                <button
+                  onClick={() => handleNavigation('dashboard')}
+                  className="text-2xl font-bold text-blue-600 flex items-center"
+                >
+                  MediMinder
+                </button>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <Link
