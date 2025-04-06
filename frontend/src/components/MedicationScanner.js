@@ -35,6 +35,18 @@ export default function MedicationScanner({ onScan }) {
     </div>
   );
 
+  const LoadingOverlay = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+          <h3 className="text-lg font-semibold text-gray-900">Processing Image</h3>
+          <p className="text-gray-600 text-center mt-2">Analyzing medication information...</p>
+        </div>
+      </div>
+    </div>
+  );
+
   // Effect to handle video element initialization
   useEffect(() => {
     if (isScanning && videoRef.current && streamRef.current) {
@@ -166,6 +178,7 @@ export default function MedicationScanner({ onScan }) {
   return (
     <div className="space-y-4">
       {error && <ErrorPopup message={error} onClose={() => setError('')} />}
+      {isProcessing && <LoadingOverlay />}
 
       {!isScanning && (
         <button
@@ -177,7 +190,7 @@ export default function MedicationScanner({ onScan }) {
         </button>
       )}
       
-      {isScanning && (
+      {isScanning && !isProcessing && (
         <div className="space-y-4">
           <div className="relative rounded-lg overflow-hidden" style={{ aspectRatio: '16/9' }}>
             <video
