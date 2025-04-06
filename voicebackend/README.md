@@ -8,7 +8,7 @@ Medical errors harm millions of U.S. patients annually, with medication errors b
 
 ### What We Learned
 
-Throughout the development of MedHelper, we gained valuable insights into several areas:
+Throughout the development of MediMinder, we gained valuable insights into several areas:
 
 - **Healthcare Technology**: We learned about the unique challenges in developing healthcare applications, including privacy considerations, data security, and the importance of user-friendly interfaces for diverse user groups.
 
@@ -22,7 +22,7 @@ Throughout the development of MedHelper, we gained valuable insights into severa
 
 ### How We Built It
 
-MedHelper was built using a modern tech stack:
+MediMinder was built using a modern tech stack:
 
 - **Frontend**: Next.js with React for the user interface, Tailwind CSS for styling, and various React hooks for state management.
 
@@ -48,7 +48,7 @@ The application features several key components:
 
 ### Challenges Faced
 
-Developing MedHelper presented several significant challenges:
+Developing MediMinder presented several significant challenges:
 
 - **Backend Integration**: Connecting the frontend with the backend services required careful API design and error handling, especially for the voice processing features.
 
@@ -60,4 +60,4 @@ Developing MedHelper presented several significant challenges:
 
 - **Optical Character Recognition**: While implementing OCR/computer vision into our project, we ran into some challenges during initial testing of scanning different medications.
 
-Despite these challenges, each obstacle provided valuable learning opportunities and helped shape MedHelper into a more robust and user-friendly application. The project has been an incredible journey of learning and growth, and we’re excited to continue improving it to better serve patients and reduce medication errors.
+Despite these challenges, each obstacle provided valuable learning opportunities and helped shape MediMinder into a more robust and user-friendly application. The project has been an incredible journey of learning and growth, and we’re excited to continue improving it to better serve patients and reduce medication errors.
