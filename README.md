@@ -1,5 +1,7 @@
 # MediMinder
 
+[**Check out MediMinder**](https://medi-minder-theta.vercel.app)
+
 A consumer-driven medication tracking and safety application designed to reduce medication errors and improve patient outcomes.
 
 ### Inspiration
