@@ -45,31 +45,8 @@ export default function Dashboard() {
     }
   };
 
-  const ErrorPopup = ({ message, onClose }) => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
-        <div className="flex items-center mb-4">
-          <div className="bg-red-100 p-2 rounded-full">
-            <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          </div>
-          <h3 className="text-lg font-semibold text-gray-900 ml-3">Error</h3>
-        </div>
-        <p className="text-gray-600 mb-4">{message}</p>
-        <button
-          onClick={onClose}
-          className="w-full bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
-        >
-          Close
-        </button>
-      </div>
-    </div>
-  );
-
   const handleScan = async (scanResult) => {
     if (!scanResult.success) {
-      setError(scanResult.error);
       return;
     }
 
@@ -107,7 +84,6 @@ export default function Dashboard() {
 
     } catch (error) {
       console.error('Error processing scan result:', error);
-      setError(error.message || 'Failed to process the scanned medication. Please try again.');
     }
   };
 
@@ -257,7 +233,6 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {error && <ErrorPopup message={error} onClose={() => setError(null)} />}
       {/* Header */}
       <div className="bg-white shadow rounded-lg p-6">
         <h1 className="text-2xl font-bold text-gray-900">Your Medications</h1>
@@ -377,7 +352,7 @@ export default function Dashboard() {
                       <p className="text-sm text-gray-500 mt-1">Notes: {medication.notes}</p>
                     )}
                   </div>
-                  <div className="flex items-center space-x-4">å
+                  <div className="flex items-center space-x-4">
                     <button
                       onClick={() => speakMedication(medication)}
                       disabled={playingMedicationId !== null && playingMedicationId !== medication.id}

@@ -20,15 +20,17 @@ export default function MedicationScanner({ onScan }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 ml-3">Scanner Error</h3>
+          <h3 className="text-lg font-semibold text-gray-900 ml-3">Scanning Issue</h3>
         </div>
         <p className="text-gray-600 mb-4">{message}</p>
-        <button
-          onClick={onClose}
-          className="w-full bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors"
-        >
-          Close
-        </button>
+        <div className="flex justify-end space-x-3">
+          <button
+            onClick={onClose}
+            className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -99,10 +101,8 @@ export default function MedicationScanner({ onScan }) {
     canvas.height = video.videoHeight;
     
     const context = canvas.getContext('2d');
-    // Mirror the image when capturing
     context.scale(-1, 1);
     context.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
-    // Reset transform
     context.setTransform(1, 0, 0, 1, 0, 0);
     
     canvas.toBlob(async (blob) => {
@@ -117,13 +117,14 @@ export default function MedicationScanner({ onScan }) {
           });
 
           if (!response.ok) {
-            throw new Error(`Server responded with ${response.status}`);
+            throw new Error(`Could not process the image. Please try scanning again.`);
           }
 
           const data = await response.json();
           
           if (data.error) {
-            throw new Error(data.error);
+            const errorMessage = "Could not identify the medication clearly. Please try scanning again with better lighting and make sure the medication label is clearly visible.";
+            throw new Error(errorMessage);
           }
 
           const voiceResponse = await fetch('http://localhost:3001/speak-medication', {
@@ -153,8 +154,7 @@ export default function MedicationScanner({ onScan }) {
           stopCamera();
           
         } catch (err) {
-          setError('Error processing image: ' + err.message);
-          console.error('Error processing image:', err);
+          setError(err.message);
           onScan({ success: false, error: err.message });
         } finally {
           setIsProcessing(false);
