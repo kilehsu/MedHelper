@@ -88,7 +88,21 @@ app.post('/process-voice', upload.single('audio'), async (req, res) => {
       messages: [
         {
           role: "system",
-          content: "You are a helpful medical assistant. Keep your responses concise and clear."
+          content: `You are an empathetic medical assistant helping a patient track their medication experience. 
+Current context:
+- Medication: ${req.body.medication || 'Not specified'}
+- Severity: ${req.body.severity || 'Not specified'}
+- Time after dose: ${req.body.timeAfterDose || 'Not specified'} minutes
+- Reported symptoms: ${req.body.symptoms || 'None reported'}
+
+Provide a caring, professional response that:
+1. Acknowledges their current symptoms and concerns
+2. References their specific medication if mentioned
+3. Notes the timing relative to their dose if relevant
+4. Offers appropriate support and next steps
+5. Flags any severe symptoms that might need immediate attention
+
+Keep responses concise, clear, and focused on their immediate situation.`
         },
         {
           role: "user",
@@ -118,6 +132,7 @@ app.post('/process-voice', upload.single('audio'), async (req, res) => {
     // Return the response audio file path
     res.json({
       text: responseText,
+      extractedInfo: transcription.text,
       audioUrl: `/audio/${audioFileName}`
     });
 
